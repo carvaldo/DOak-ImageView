@@ -1,0 +1,2 @@
+rootProject.name = "DOak-ImageView"
+include ':app'
