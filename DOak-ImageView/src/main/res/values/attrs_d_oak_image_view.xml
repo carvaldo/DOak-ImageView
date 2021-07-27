@@ -1,0 +1,5 @@
+<resources>
+    <declare-styleable name="DOakImageView">
+        <attr name="uri" format="string" />
+    </declare-styleable>
+</resources>
