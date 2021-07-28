@@ -9,8 +9,10 @@
     <com.github.carvaldo.doak.imageview.DOakImageView
         android:id="@+id/image_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="300dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:scaleType="centerCrop"
+        app:url="https://imdb-api.com/images/original/MV5BMTg3NjUxMzM5NV5BMl5BanBnXkFtZTcwMzQ1NjQzMw@@._V1_Ratio0.6852_AL_.jpg"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

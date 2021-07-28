@@ -1,33 +1,29 @@
 package com.github.carvaldo.doak.imageview
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.text.TextPaint
 import android.util.AttributeSet
-import android.view.View
+import android.util.Log
+import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Cache
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.net.URL
 
+private val TAG = DOakImageView::class.java.canonicalName
+
 /**
  * TODO: document your custom view class.
  */
-class DOakImageView : View {
+class DOakImageView : androidx.appcompat.widget.AppCompatImageView {
 
-    private var _url: URL? = null // TODO: use a default from R.string...
     private val client = OkHttpClient.Builder()
         .cache(
             Cache(
@@ -38,13 +34,10 @@ class DOakImageView : View {
         )
         .build()
 
-    /**
-     * The text to draw
-     */
-    var uri: String?
-        get() = _url?.toURI()?.path
+    @Suppress("MemberVisibilityCanBePrivate")
+    var uri: Uri? = null
         set(value) {
-            _url = URL(value)
+            field = value
             invalidateImage()
         }
 
@@ -69,31 +62,34 @@ class DOakImageView : View {
         val a = context.obtainStyledAttributes(
             attrs, R.styleable.DOakImageView, defStyle, 0
         )
-        if (a.hasValue(R.styleable.DOakImageView_uri)) {
-            _url = URL(a.getString(R.styleable.DOakImageView_uri))
+        if (a.hasValue(R.styleable.DOakImageView_url)) {
+            uri = a.getString(R.styleable.DOakImageView_url)?.toUri()
         }
         a.recycle()
-        // Update TextPaint and text measurements from attributes
         invalidateImage()
     }
 
     private fun invalidateImage() {
-        MainScope().launch(Dispatchers.IO) {
-            if (_url != null) {
-                val request = Request.Builder()
-                    .url(_url!!)
-                    .build()
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    val stream = response.body?.byteStream()
-                    val drawable = BitmapDrawable.createFromStream(stream, "DOakImageView")
-                    withContext(Dispatchers.Main) {
-                        this@DOakImageView.background = drawable
+        when (uri != null) {
+            true -> {
+                MainScope().launch(Dispatchers.IO) {
+                    val request = Request.Builder()
+                        .url(URL(uri.toString()))
+                        .build()
+                    val response = client.newCall(request).execute()
+                    if (response.isSuccessful) {
+                        val stream = response.body?.byteStream()
+                        val drawable = BitmapDrawable.createFromStream(stream, BuildConfig.LIBRARY_PACKAGE_NAME)
+                        withContext(Dispatchers.Main) {
+                            this@DOakImageView.setImageDrawable(drawable)
+                        }
+                    } else {
+                        //TODO fail
+                        Log.e(TAG, "Response FAIL", )
                     }
-                } else {
-                    //TODO fail
                 }
             }
+            false -> setImageDrawable(null)
         }
     }
 
